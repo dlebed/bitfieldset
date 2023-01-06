@@ -7,6 +7,10 @@ env:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        compiler: [ { cpp: g++, c: gcc}, { cpp: clang++, c: clang } ]
+
     runs-on: ubuntu-latest
 
     defaults:
@@ -25,6 +29,9 @@ jobs:
       - name: Configure CMake
         working-directory: ${{github.workspace}}
         shell: bash
+        env:
+          CC: ${{ matrix.compiler.c }}
+          CXX: ${{ matrix.compiler.cpp }}
         run: cmake -B build -S tests
 
       - name: Build
