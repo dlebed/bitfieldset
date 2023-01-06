@@ -12,3 +12,4 @@
 .idea
 
 *build*/*
+tests/*build*/*
