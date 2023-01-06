@@ -1,0 +1,14 @@
+*.o
+*.gch
+*.pch
+*.so
+*.dll
+*.a
+*.lib
+*.exe
+*.out
+*.app
+
+.idea
+
+*build*/*
