@@ -1,0 +1,38 @@
+name: build and test
+
+on: [push]
+
+env:
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - uses: einaregilsson/build-number@v3
+        with:
+          token: ${{secrets.github_token}}
+
+      - name: Configure CMake
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: cmake -B build -S tests
+
+      - name: Build
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: cmake --build build -j4
+
+      - name: Run
+        working-directory: ${{github.workspace}}/build
+        shell: bash
+        run: ctest

@@ -26,7 +26,7 @@ tests_add_test(test_bitfieldset test_bitfieldset.cpp)
 
 ProcessorCount(N_CPU)
 
-add_custom_target(unit_tests ALL
+add_custom_target(run_tests
 	COMMAND ${CMAKE_CTEST_COMMAND} -j ${N_CPU} --output-on-failure
 	DEPENDS ${TEST_TARGETS}
 )
