@@ -20,11 +20,8 @@ macro(tests_add_test test_name)
 	endif()
 endmacro()
 
-# enable sanitizers
-add_compile_options(
-	-fsanitize=leak
-	-fsanitize=undefined
-	-fsanitize=address
-)
-
-link_libraries(asan ubsan)
+# Enable sanitizers
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	add_compile_options(-fsanitize=leak -fsanitize=undefined -fsanitize=address)
+	link_libraries(asan ubsan)
+endif()
