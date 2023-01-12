@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 
 include(ProcessorCount)
 
-project(cpp-bitfield-tests)
+project(cpp-bitfieldset-tests)
 enable_testing()
 
 set(default_build_type "Debug")
@@ -16,8 +16,8 @@ if(NOT DEFINED GOOGLETEST_DIR)
 endif()
 add_subdirectory(${GOOGLETEST_DIR} googletest)
 
-add_subdirectory(${PROJ_DIR} cpp-bitfield)
-link_libraries(cpp-bitfield)
+add_subdirectory(${PROJ_DIR} cpp-bitfieldset)
+link_libraries(cpp-bitfieldset)
 
 include(${PROJ_DIR}/cmake/tests.cmake)
 
