@@ -22,10 +22,6 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: einaregilsson/build-number@v3
-        with:
-          token: ${{secrets.github_token}}
-
       - name: Configure CMake
         working-directory: ${{github.workspace}}
         shell: bash
