@@ -11,10 +11,12 @@
 
 namespace hal {
 
-template <typename T = uint32_t>
+using MachineWordType = uint32_t;
+
+template <typename T = MachineWordType>
 constexpr inline T bit(size_t pos)
 {
-	return static_cast<T>(1) << pos;
+	return static_cast<T>(static_cast<T>(1) << pos);
 }
 
 enum class AccessType {
@@ -23,6 +25,11 @@ enum class AccessType {
 	WRITE_ONLY	= bit(1),
 	READ_WRITE	= READ_ONLY | WRITE_ONLY,
 };
+
+consteval void consteval_assert(bool cond, [[maybe_unused]] const char *str)
+{
+	cond /= cond;	/* consteval assertion failed if error is here */
+}
 
 }
 

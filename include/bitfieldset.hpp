@@ -18,6 +18,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <cassert>
+#include <type_traits>
 
 #include "hal_common.hpp"
 
@@ -39,15 +41,15 @@ template <typename TWord>
 struct BitField {
 	/* Layout */
 	/** alternative to #word field definition - bit field word offset in bytes */
-	size_t		byte_offset = BITFIELD_OFFSET_UNDEFINED;
+	size_t		byteOffset = BITFIELD_OFFSET_UNDEFINED;
 	/** word index - required field, used to index HW words in accessors */
-	size_t		word = byte_offset / sizeof(TWord);
+	size_t		word = byteOffset / sizeof(TWord);
 	/** least significant bit */
 	uint8_t		lsb;
 	/** most significant bit, by default is set to maximum word width */
 	uint8_t		msb = std::numeric_limits<TWord>::digits - 1;
 	/** offset of the field in compound value */
-	uint8_t		compound_offset;
+	uint8_t		compoundOffset;
 
 	/* Value range */
 	/** default value (e.g. POR value for register) */
@@ -60,10 +62,41 @@ struct BitField {
 	/** access type allowed for bit field (RW/RO/WO) */
 	AccessType	access = AccessType::READ_WRITE;
 	/** bit field overlap with others (compile time check) */
-	bool		may_overlap = false;
+	bool		mayOverlap = false;
+
+	static_assert(std::is_unsigned<TWord>::value,
+				  "Underlying bit field type should be unsigned");
 };
 
 
+template <typename TBitFieldDef>
+class BitFieldSetUtil {
+public:
+	using TWord = typename TBitFieldDef::WordType;
+
+	/* Define class as a singleton */
+	BitFieldSetUtil() = default;
+	~BitFieldSetUtil() = default;
+	BitFieldSetUtil(const BitFieldSetUtil&) = delete;
+	BitFieldSetUtil& operator=(const BitFieldSetUtil&) = delete;
+
+	static consteval TWord bitMask(uint8_t lsb, uint8_t msb)
+	{
+		TWord mask = 0;
+
+		consteval_assert(msb >= lsb, "invalid input: msb < lsb");
+		consteval_assert(msb < wordBits, "msb is out of bounds");
+
+		for (size_t i = lsb; i <= msb; i++) {
+			mask |= bit<TWord>(i);
+		}
+
+		return mask;
+	}
+
+private:
+	static constexpr size_t wordBits = std::numeric_limits<TWord>::digits;
+};
 
 }
 
