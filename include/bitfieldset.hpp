@@ -100,6 +100,87 @@ private:
 	static constexpr size_t wordBits = std::numeric_limits<TWord>::digits;
 };
 
+template <typename TBitFieldDef>
+class BitFieldSet : public TBitFieldDef {
+public:
+	using TWord = typename TBitFieldDef::WordType;
+
+	template <typename TBitFieldDef::FIELDS field>
+	constexpr void set(TWord value)
+	{
+		const size_t idx = wordIdx(field);
+		const auto &entry = TBitFieldDef::layout[field];
+		const TWord mask = Util::bitMask(entry.lsb,entry.msb);
+		TWord &word = raw[idx];
+
+		static_assert(entry.access != AccessType::READ_ONLY, "writing to RO field");
+
+		word &= ~mask;
+		word |= (value << entry.lsb) & mask;
+	}
+
+	template <typename TBitFieldDef::FIELDS field>
+	constexpr void set(TWord value) volatile
+	{
+		const size_t idx = wordIdx(field);
+		const auto &entry = TBitFieldDef::layout[field];
+		const TWord mask = Util::bitMask(entry.lsb,entry.msb);
+		TWord &word = raw[idx];
+
+		static_assert(entry.access != AccessType::READ_ONLY, "writing to RO field");
+
+		word &= ~mask;
+		word |= (value << entry.lsb) & mask;
+	}
+
+	template <typename TBitFieldDef::FIELDS field>
+	constexpr TWord get() const
+	{
+		const size_t idx = wordIdx(field);
+		const auto &entry = TBitFieldDef::layout[field];
+		const TWord mask = Util::bitMask(entry.lsb,entry.msb);
+		const TWord &word = raw[idx];
+
+		static_assert(entry.access != AccessType::WRITE_ONLY, "reading from WO field");
+
+		return (word & mask) >> entry.lsb;
+	}
+
+	template <typename TBitFieldDef::FIELDS field>
+	constexpr TWord get() const volatile
+	{
+		const size_t idx = wordIdx(field);
+		const auto &entry = TBitFieldDef::layout[field];
+		const TWord mask = Util::bitMask(entry.lsb,entry.msb);
+		const TWord &word = raw[idx];
+
+		static_assert(entry.access != AccessType::WRITE_ONLY, "reading from WO field");
+
+		return (word & mask) >> entry.lsb;
+	}
+
+	constexpr void resetAll()
+	{
+		std::fill_n(raw, TBitFieldDef::wordCount, 0);
+	}
+
+	constexpr void resetAll() volatile
+	{
+		std::fill_n(raw, TBitFieldDef::wordCount, 0);
+	}
+
+private:
+	using Util = BitFieldSetUtil<TBitFieldDef>;
+
+	static constexpr size_t wordIdx(typename TBitFieldDef::FIELDS field)
+	{
+		return TBitFieldDef::layout[static_cast<size_t>(field)].word;
+	}
+
+
+	TWord raw[TBitFieldDef::wordCount];
+};
+
 }
 
 #endif /* BITFIELDSET_BITFIELDSET_HPP */

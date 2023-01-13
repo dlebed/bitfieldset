@@ -34,14 +34,19 @@ struct TestBitFieldFlexDef {
 	__extension__
 	static constexpr struct BitField<WordType> layout[fieldCount] =
 	{
-		[F1]	= { .word = 0,	.lsb = 0,				.msb = 2	},
-		[F2]	= { .word = 0,	.lsb = 3,				.msb = 4	},
+		[F1]	= { .word = 0,	.lsb = 0,				.msb = 2		},
+		[F2]	= { .word = 0,	.lsb = 3,				.msb = 4		},
 		[F3]	= { .word = 0,	.lsb = 4,				.msb = bits - 1	},
 		[F4]	= { .word = 1,	.lsb = 0,				.msb = bits / 2	},
 		[F5]	= { .word = 1,	.lsb = bits / 2 + 1,	.msb = bits - 1	},
 		[F6]	= { .word = 2,	.lsb = 0,				.msb = bits - 1	},
 	};
 };
+
+class TBF : public BitFieldSet<TestBitFieldFlexDef<uint32_t>> { };
+
+static_assert(std::is_trivial<TBF>::value, "BitFieldSet is not a trivial class");
+static_assert(std::is_standard_layout<TBF>::value, "BitFieldSet is not a standard layout class");
 
 template <typename T>
 void utilBitMaskTestConst()
@@ -98,7 +103,32 @@ TEST(BitFieldSetTest, UtilBitMaskTestRuntime)
 	utilBitMaskTestRuntime<TestBitFieldFlexDef<uint64_t>>();
 }
 
+consteval uint32_t testConstexpr()
+{
+	TBF tb;
+
+	tb.resetAll();
+
+	tb.set<TBF::F1>(2);
+	tb.set<TBF::F2>(3);
+
+	return tb.get<TBF::F1>() + tb.get<TBF::F2>();
+}
+
+TEST(BitFieldSetTest, BasicConstexprTest)
+{
+	EXPECT_EQ(testConstexpr(), 5);
+}
+
 TEST(BitFieldSetTest, BasicTest)
 {
-	EXPECT_EQ(2 * 2, 4);
+	TBF tb;
+
+	tb.resetAll();
+
+	tb.set<TBF::F1>(3);
+	tb.set<TBF::F2>(2);
+
+	EXPECT_EQ(tb.get<TBF::F1>(), 3);
+	EXPECT_EQ(tb.get<TBF::F2>(), 2);
 }

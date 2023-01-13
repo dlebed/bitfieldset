@@ -12,7 +12,7 @@
 
 namespace hal {
 
-constexpr bool kDebugEnable = false;
+constexpr bool kDebugEnable = DEBUG_EN;
 
 using MachineWordType = uint32_t;
 
