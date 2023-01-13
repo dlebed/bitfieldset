@@ -44,7 +44,7 @@ struct TestBitFieldFlexDef {
 };
 
 template <typename T>
-void utilBitMaskTest()
+void utilBitMaskTestConst()
 {
 	using TWord = typename T::WordType;
 	constexpr size_t bits = std::numeric_limits<TWord>::digits;
@@ -56,12 +56,46 @@ void utilBitMaskTest()
 	EXPECT_EQ(BitFieldSetUtil<T>::bitMask(0, 3), 0xF);
 }
 
-TEST(BitFieldSetTest, UtilBitMaskTest)
+template <typename T>
+T bitMaskNaive(size_t lsb, size_t msb)
 {
-	utilBitMaskTest<TestBitFieldFlexDef<uint8_t>>();
-	utilBitMaskTest<TestBitFieldFlexDef<uint16_t>>();
-	utilBitMaskTest<TestBitFieldFlexDef<uint32_t>>();
-	utilBitMaskTest<TestBitFieldFlexDef<uint64_t>>();
+	T mask = 0;
+
+	for (size_t i = lsb; i <= msb; i++) {
+		mask |= bit<T>(i);
+	}
+
+	return mask;
+}
+
+template <typename T>
+void utilBitMaskTestRuntime()
+{
+	using TWord = typename T::WordType;
+	constexpr size_t bits = std::numeric_limits<TWord>::digits;
+
+	for (uint8_t lsb = 0; lsb < bits; lsb++) {
+		for (uint8_t msb = lsb; msb < bits; msb++) {
+			EXPECT_EQ(BitFieldSetUtil<T>::bitMask(lsb, msb),
+					  bitMaskNaive<TWord>(lsb, msb));
+		}
+	}
+}
+
+TEST(BitFieldSetTest, UtilBitMaskTestConst)
+{
+	utilBitMaskTestConst<TestBitFieldFlexDef<uint8_t>>();
+	utilBitMaskTestConst<TestBitFieldFlexDef<uint16_t>>();
+	utilBitMaskTestConst<TestBitFieldFlexDef<uint32_t>>();
+	utilBitMaskTestConst<TestBitFieldFlexDef<uint64_t>>();
+}
+
+TEST(BitFieldSetTest, UtilBitMaskTestRuntime)
+{
+	utilBitMaskTestRuntime<TestBitFieldFlexDef<uint8_t>>();
+	utilBitMaskTestRuntime<TestBitFieldFlexDef<uint16_t>>();
+	utilBitMaskTestRuntime<TestBitFieldFlexDef<uint32_t>>();
+	utilBitMaskTestRuntime<TestBitFieldFlexDef<uint64_t>>();
 }
 
 TEST(BitFieldSetTest, BasicTest)

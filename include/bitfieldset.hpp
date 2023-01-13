@@ -80,16 +80,18 @@ public:
 	BitFieldSetUtil(const BitFieldSetUtil&) = delete;
 	BitFieldSetUtil& operator=(const BitFieldSetUtil&) = delete;
 
-	static consteval TWord bitMask(uint8_t lsb, uint8_t msb)
+	static constexpr TWord bitMask(uint8_t lsb, uint8_t msb)
 	{
-		TWord mask = 0;
+		const size_t bitPos = msb - lsb;
+		TWord mask;
 
-		consteval_assert(msb >= lsb, "invalid input: msb < lsb");
-		consteval_assert(msb < wordBits, "msb is out of bounds");
+		constexpr_assert(msb >= lsb, "invalid input: msb < lsb");
+		constexpr_assert(msb < wordBits, "msb is out of bounds");
 
-		for (size_t i = lsb; i <= msb; i++) {
-			mask |= bit<TWord>(i);
-		}
+		mask = bit<TWord>(bitPos);
+		mask |= mask - 1;
+
+		mask = static_cast<TWord>(mask << lsb);
 
 		return mask;
 	}

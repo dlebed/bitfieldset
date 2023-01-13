@@ -8,8 +8,11 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <type_traits>
 
 namespace hal {
+
+constexpr bool kDebugEnable = false;
 
 using MachineWordType = uint32_t;
 
@@ -26,9 +29,13 @@ enum class AccessType {
 	READ_WRITE	= READ_ONLY | WRITE_ONLY,
 };
 
-consteval void consteval_assert(bool cond, [[maybe_unused]] const char *str)
+constexpr void constexpr_assert(bool cond, [[maybe_unused]] const char *str)
 {
-	cond /= cond;	/* consteval assertion failed if error is here */
+	if (std::is_constant_evaluated()) {
+		cond /= cond;	/* assertion failed if you see divide by 0 error */
+	} else if (kDebugEnable) {
+		/* TODO: runtime assert */
+	}
 }
 
 }
