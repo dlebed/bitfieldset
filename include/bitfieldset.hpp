@@ -20,6 +20,7 @@
 #include <limits>
 #include <cassert>
 #include <type_traits>
+#include <algorithm>
 
 #include "hal_common.hpp"
 
