@@ -125,7 +125,7 @@ public:
 		const size_t idx = wordIdx(field);
 		const auto &entry = TBitFieldDef::layout[field];
 		const TWord mask = Util::bitMask(entry.lsb,entry.msb);
-		TWord &word = raw[idx];
+		volatile TWord &word = raw[idx];
 
 		static_assert(entry.access != AccessType::READ_ONLY, "writing to RO field");
 
@@ -152,7 +152,7 @@ public:
 		const size_t idx = wordIdx(field);
 		const auto &entry = TBitFieldDef::layout[field];
 		const TWord mask = Util::bitMask(entry.lsb,entry.msb);
-		const TWord &word = raw[idx];
+		const volatile TWord &word = raw[idx];
 
 		static_assert(entry.access != AccessType::WRITE_ONLY, "reading from WO field");
 
