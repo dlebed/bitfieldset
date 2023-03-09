@@ -36,7 +36,7 @@ struct TestBitFieldFlexDef {
 	{
 		[F1]	= { .word = 0,	.lsb = 0,				.msb = 2		},
 		[F2]	= { .word = 0,	.lsb = 3,				.msb = 4		},
-		[F3]	= { .word = 0,	.lsb = 4,				.msb = bits - 1	},
+		[F3]	= { .word = 0,	.lsb = 5,				.msb = bits - 1	},
 		[F4]	= { .word = 1,	.lsb = 0,				.msb = bits / 2	},
 		[F5]	= { .word = 1,	.lsb = bits / 2 + 1,	.msb = bits - 1	},
 		[F6]	= { .word = 2,	.lsb = 0,				.msb = bits - 1	},
