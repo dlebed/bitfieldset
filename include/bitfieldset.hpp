@@ -83,18 +83,7 @@ public:
 
 	static constexpr TWord bitMask(uint8_t lsb, uint8_t msb)
 	{
-		const size_t bitPos = msb - lsb;
-		TWord mask;
-
-		constexpr_assert(msb >= lsb, "invalid input: msb < lsb");
-		constexpr_assert(msb < wordBits, "msb is out of bounds");
-
-		mask = bit<TWord>(bitPos);
-		mask |= mask - 1;
-
-		mask = static_cast<TWord>(mask << lsb);
-
-		return mask;
+		return hal::bitMask<TWord>(lsb, msb);
 	}
 
 private:

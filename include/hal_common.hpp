@@ -38,6 +38,24 @@ constexpr void constexpr_assert(bool cond, [[maybe_unused]] const char *str)
 	}
 }
 
+template <typename T = MachineWordType>
+constexpr T bitMask(uint8_t lsb, uint8_t msb)
+{
+	constexpr size_t wordBits = std::numeric_limits<T>::digits;
+	const size_t bitPos = msb - lsb;
+	T mask;
+
+	constexpr_assert(msb >= lsb, "invalid input: msb < lsb");
+	constexpr_assert(msb < wordBits, "msb is out of bounds");
+
+	mask = bit<T>(bitPos);
+	mask |= mask - 1;
+
+	mask = static_cast<T>(mask << lsb);
+
+	return mask;
+}
+
 }
 
 #endif /* BITFIELDSET_HAL_COMMON_HPP */
