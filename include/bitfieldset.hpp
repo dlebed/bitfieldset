@@ -81,6 +81,26 @@ public:
 	BitFieldSetUtil(const BitFieldSetUtil&) = delete;
 	BitFieldSetUtil& operator=(const BitFieldSetUtil&) = delete;
 
+	static constexpr bool hasOverlappingFields()
+	{
+		TWord scratch[TBitFieldDef::wordCount] = { 0 };
+		TWord overlapMask = 0;
+
+		for (auto const &entry : TBitFieldDef::layout) {
+			const TWord mask = bitMask<TWord>(entry.lsb, entry.msb);
+			const size_t word = entry.word;
+
+			if (entry.mayOverlap) {
+				continue;
+			}
+
+			overlapMask |= scratch[word] & mask;
+			scratch[word] |= mask;
+		}
+
+		return overlapMask != 0;
+	}
+
 private:
 	static constexpr size_t wordBits = std::numeric_limits<TWord>::digits;
 };
@@ -161,6 +181,9 @@ private:
 	{
 		return TBitFieldDef::layout[static_cast<size_t>(field)].word;
 	}
+
+	/* Compile-time consistency checks */
+	static_assert(!Util::hasOverlappingFields(), "Bit fields are overlapping");
 
 	TWord raw[TBitFieldDef::wordCount];
 };
