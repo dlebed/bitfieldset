@@ -51,14 +51,13 @@ static_assert(std::is_standard_layout<TBF>::value, "BitFieldSet is not a standar
 template <typename T>
 void utilBitMaskTestConst()
 {
-	using TWord = typename T::WordType;
-	constexpr size_t bits = std::numeric_limits<TWord>::digits;
+	constexpr size_t bits = std::numeric_limits<T>::digits;
 
-	EXPECT_EQ(BitFieldSetUtil<T>::mask(0, 0), 0x01);
-	EXPECT_EQ(BitFieldSetUtil<T>::mask(bits - 1, bits - 1), bit<TWord>(bits - 1));
-	EXPECT_EQ(BitFieldSetUtil<T>::mask(0, bits - 1), static_cast<TWord>(-1));
-	EXPECT_EQ(BitFieldSetUtil<T>::mask(0, 7), 0xFF);
-	EXPECT_EQ(BitFieldSetUtil<T>::mask(0, 3), 0xF);
+	EXPECT_EQ(bitMask<T>(0, 0), 0x01);
+	EXPECT_EQ(bitMask<T>(bits - 1, bits - 1), bit<T>(bits - 1));
+	EXPECT_EQ(bitMask<T>(0, bits - 1), static_cast<T>(-1));
+	EXPECT_EQ(bitMask<T>(0, 7), 0xFF);
+	EXPECT_EQ(bitMask<T>(0, 3), 0xF);
 }
 
 template <typename T>
@@ -76,31 +75,29 @@ T bitMaskNaive(size_t lsb, size_t msb)
 template <typename T>
 void utilBitMaskTestRuntime()
 {
-	using TWord = typename T::WordType;
-	constexpr size_t bits = std::numeric_limits<TWord>::digits;
+	constexpr size_t bits = std::numeric_limits<T>::digits;
 
 	for (uint8_t lsb = 0; lsb < bits; lsb++) {
 		for (uint8_t msb = lsb; msb < bits; msb++) {
-			EXPECT_EQ(BitFieldSetUtil<T>::mask(lsb, msb),
-					  bitMaskNaive<TWord>(lsb, msb));
+			EXPECT_EQ(bitMask<T>(lsb, msb), bitMaskNaive<T>(lsb, msb));
 		}
 	}
 }
 
 TEST(BitFieldSetTest, UtilBitMaskTestConst)
 {
-	utilBitMaskTestConst<TestBitFieldFlexDef<uint8_t>>();
-	utilBitMaskTestConst<TestBitFieldFlexDef<uint16_t>>();
-	utilBitMaskTestConst<TestBitFieldFlexDef<uint32_t>>();
-	utilBitMaskTestConst<TestBitFieldFlexDef<uint64_t>>();
+	utilBitMaskTestConst<uint8_t>();
+	utilBitMaskTestConst<uint16_t>();
+	utilBitMaskTestConst<uint32_t>();
+	utilBitMaskTestConst<uint64_t>();
 }
 
 TEST(BitFieldSetTest, UtilBitMaskTestRuntime)
 {
-	utilBitMaskTestRuntime<TestBitFieldFlexDef<uint8_t>>();
-	utilBitMaskTestRuntime<TestBitFieldFlexDef<uint16_t>>();
-	utilBitMaskTestRuntime<TestBitFieldFlexDef<uint32_t>>();
-	utilBitMaskTestRuntime<TestBitFieldFlexDef<uint64_t>>();
+	utilBitMaskTestRuntime<uint8_t>();
+	utilBitMaskTestRuntime<uint16_t>();
+	utilBitMaskTestRuntime<uint32_t>();
+	utilBitMaskTestRuntime<uint64_t>();
 }
 
 consteval uint32_t testConstexpr()
