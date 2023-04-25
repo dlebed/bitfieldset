@@ -17,7 +17,7 @@ constexpr bool kDebugEnable = DEBUG_EN;
 using MachineWordType = uint32_t;
 
 template <typename T = MachineWordType>
-constexpr inline T bit(size_t pos)
+constexpr T bit(size_t pos)
 {
 	return static_cast<T>(static_cast<T>(1) << pos);
 }
