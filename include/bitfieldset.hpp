@@ -81,10 +81,12 @@ public:
 	BitFieldSetUtil(const BitFieldSetUtil&) = delete;
 	BitFieldSetUtil& operator=(const BitFieldSetUtil&) = delete;
 
-	static constexpr TWord bitMask(uint8_t lsb, uint8_t msb)
+	static constexpr TWord mask(uint8_t lsb, uint8_t msb)
 	{
 		return hal::bitMask<TWord>(lsb, msb);
 	}
+
+
 
 private:
 	static constexpr size_t wordBits = std::numeric_limits<TWord>::digits;
@@ -100,7 +102,7 @@ public:
 	{
 		const size_t idx = wordIdx(field);
 		const auto &entry = TBitFieldDef::layout[field];
-		const TWord mask = Util::bitMask(entry.lsb,entry.msb);
+		const TWord mask = Util::mask(entry.lsb, entry.msb);
 		TWord &word = raw[idx];
 
 		static_assert(entry.access != AccessType::READ_ONLY, "writing to RO field");
@@ -114,7 +116,7 @@ public:
 	{
 		const size_t idx = wordIdx(field);
 		const auto &entry = TBitFieldDef::layout[field];
-		const TWord mask = Util::bitMask(entry.lsb,entry.msb);
+		const TWord mask = Util::mask(entry.lsb, entry.msb);
 		volatile TWord &word = raw[idx];
 
 		static_assert(entry.access != AccessType::READ_ONLY, "writing to RO field");
@@ -128,7 +130,7 @@ public:
 	{
 		const size_t idx = wordIdx(field);
 		const auto &entry = TBitFieldDef::layout[field];
-		const TWord mask = Util::bitMask(entry.lsb,entry.msb);
+		const TWord mask = Util::mask(entry.lsb, entry.msb);
 		const TWord &word = raw[idx];
 
 		static_assert(entry.access != AccessType::WRITE_ONLY, "reading from WO field");
@@ -141,7 +143,7 @@ public:
 	{
 		const size_t idx = wordIdx(field);
 		const auto &entry = TBitFieldDef::layout[field];
-		const TWord mask = Util::bitMask(entry.lsb,entry.msb);
+		const TWord mask = Util::mask(entry.lsb, entry.msb);
 		const volatile TWord &word = raw[idx];
 
 		static_assert(entry.access != AccessType::WRITE_ONLY, "reading from WO field");

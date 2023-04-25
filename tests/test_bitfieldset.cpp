@@ -54,11 +54,11 @@ void utilBitMaskTestConst()
 	using TWord = typename T::WordType;
 	constexpr size_t bits = std::numeric_limits<TWord>::digits;
 
-	EXPECT_EQ(BitFieldSetUtil<T>::bitMask(0, 0), 0x01);
-	EXPECT_EQ(BitFieldSetUtil<T>::bitMask(bits - 1, bits - 1), bit<TWord>(bits - 1));
-	EXPECT_EQ(BitFieldSetUtil<T>::bitMask(0, bits - 1), static_cast<TWord>(-1));
-	EXPECT_EQ(BitFieldSetUtil<T>::bitMask(0, 7), 0xFF);
-	EXPECT_EQ(BitFieldSetUtil<T>::bitMask(0, 3), 0xF);
+	EXPECT_EQ(BitFieldSetUtil<T>::mask(0, 0), 0x01);
+	EXPECT_EQ(BitFieldSetUtil<T>::mask(bits - 1, bits - 1), bit<TWord>(bits - 1));
+	EXPECT_EQ(BitFieldSetUtil<T>::mask(0, bits - 1), static_cast<TWord>(-1));
+	EXPECT_EQ(BitFieldSetUtil<T>::mask(0, 7), 0xFF);
+	EXPECT_EQ(BitFieldSetUtil<T>::mask(0, 3), 0xF);
 }
 
 template <typename T>
@@ -81,7 +81,7 @@ void utilBitMaskTestRuntime()
 
 	for (uint8_t lsb = 0; lsb < bits; lsb++) {
 		for (uint8_t msb = lsb; msb < bits; msb++) {
-			EXPECT_EQ(BitFieldSetUtil<T>::bitMask(lsb, msb),
+			EXPECT_EQ(BitFieldSetUtil<T>::mask(lsb, msb),
 					  bitMaskNaive<TWord>(lsb, msb));
 		}
 	}
