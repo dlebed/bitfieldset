@@ -130,7 +130,7 @@ public:
 	static constexpr bool isBitIndexWithinTypeBounds()
 	{
 		for (auto const &entry : TBitFieldDef::layout) {
-			if (entry.lsb > wordBits || entry.msb >= wordBits) {
+			if (entry.lsb >= wordBits || entry.msb >= wordBits) {
 				return false;
 			}
 		}
