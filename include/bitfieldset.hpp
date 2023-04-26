@@ -65,6 +65,9 @@ struct BitField {
 	/** bit field overlap with others (compile time check) */
 	bool		mayOverlap = false;
 
+	/* Type checks */
+	static_assert(std::is_integral<TWord>::value,
+				  "Underlying bit filed type should be integral");
 	static_assert(std::is_unsigned<TWord>::value,
 				  "Underlying bit field type should be unsigned");
 };
@@ -114,6 +117,12 @@ public:
 	}
 
 private:
+	/* Type checks */
+	static_assert(std::is_integral<TWord>::value,
+				  "Underlying bit filed type should be integral");
+	static_assert(std::is_unsigned<TWord>::value,
+				  "Underlying bit field type should be unsigned");
+
 	static constexpr size_t wordBits = std::numeric_limits<TWord>::digits;
 };
 
@@ -199,6 +208,7 @@ private:
 	static_assert(Util::isByteOffsetConsistent(),
 				  "Byte offset value is not consistent with word value");
 
+	/* bit field underlying raw storage */
 	TWord raw[TBitFieldDef::wordCount];
 };
 
