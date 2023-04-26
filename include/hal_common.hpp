@@ -29,7 +29,8 @@ enum class AccessType {
 	READ_WRITE	= READ_ONLY | WRITE_ONLY,
 };
 
-constexpr void constexpr_assert(bool cond, [[maybe_unused]] const char *str)
+template<typename... Ts>
+constexpr void constexpr_assert(bool cond, [[maybe_unused]] const char *str, [[maybe_unused]] Ts...)
 {
 	if (std::is_constant_evaluated()) {
 		cond /= cond;	/* assertion failed if you see divide by 0 error */
