@@ -167,6 +167,12 @@ public:
 	}
 
 private:
+	template <typename T, size_t N>
+	static constexpr size_t arraySize(T (&)[N]) { return N; }
+
+	static_assert(TBitFieldDef::fieldCount == arraySize(TBitFieldDef::layout),
+				  "Layout array size is inconsistent with word count");
+
 	/* Type checks */
 	static_assert(std::is_integral<TWord>::value,
 				  "Underlying bit filed type should be integral");
