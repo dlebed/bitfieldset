@@ -116,6 +116,56 @@ public:
 		return true;
 	}
 
+	static constexpr bool isWordIdxWithinBounds()
+	{
+		for (auto const &entry : TBitFieldDef::layout) {
+			if (entry.word > TBitFieldDef::wordCount) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	static constexpr bool isBitIndexWithinTypeBounds()
+	{
+		for (auto const &entry : TBitFieldDef::layout) {
+			if (entry.lsb > wordBits || entry.msb >= wordBits) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	static constexpr bool isDefaultValueConsistent()
+	{
+		for (auto const &entry : TBitFieldDef::layout) {
+			const TWord mask = bitMask<TWord>(entry.lsb, entry.msb) >> entry.lsb;
+
+			if ((entry.def & mask) != entry.def) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	static constexpr bool isValueBoundsConsistent()
+	{
+		for (auto const &entry : TBitFieldDef::layout) {
+			const TWord mask = bitMask<TWord>(entry.lsb, entry.msb) >> entry.lsb;
+
+			if ((entry.min & mask) != entry.min ||
+				(entry.max & mask) != entry.max ||
+				entry.min > entry.max) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 private:
 	/* Type checks */
 	static_assert(std::is_integral<TWord>::value,
@@ -204,9 +254,13 @@ private:
 	}
 
 	/* Compile-time consistency checks */
+	static_assert(Util::isWordIdxWithinBounds(), "Word index is not within defined range");
+	static_assert(Util::isBitIndexWithinTypeBounds(), "Bit index is out of word type bounds");
 	static_assert(!Util::hasOverlappingFields(), "Bit fields are overlapping");
 	static_assert(Util::isByteOffsetConsistent(),
 				  "Byte offset value is not consistent with word value");
+	static_assert(Util::isDefaultValueConsistent(), "Default value is not consistent with bitmask");
+	static_assert(Util::isValueBoundsConsistent(), "Value bounds (min/max) are not consistent");
 
 	/* bit field underlying raw storage */
 	TWord raw[TBitFieldDef::wordCount];
