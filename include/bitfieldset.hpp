@@ -66,8 +66,6 @@ struct BitField {
 	bool		mayOverlap = false;
 
 	/* Type checks */
-	static_assert(std::is_integral<TWord>::value,
-				  "Underlying bit filed type should be integral");
 	static_assert(std::is_unsigned<TWord>::value,
 				  "Underlying bit field type should be unsigned");
 };
@@ -174,8 +172,6 @@ private:
 				  "Layout array size is inconsistent with word count");
 
 	/* Type checks */
-	static_assert(std::is_integral<TWord>::value,
-				  "Underlying bit filed type should be integral");
 	static_assert(std::is_unsigned<TWord>::value,
 				  "Underlying bit field type should be unsigned");
 
