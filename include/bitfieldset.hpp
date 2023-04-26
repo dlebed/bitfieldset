@@ -101,6 +101,18 @@ public:
 		return overlapMask != 0;
 	}
 
+	static constexpr bool isByteOffsetConsistent()
+	{
+		for (auto const &entry : TBitFieldDef::layout) {
+			if (entry.byteOffset != BITFIELD_OFFSET_UNDEFINED &&
+				entry.byteOffset != entry.word * sizeof(TWord)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 private:
 	static constexpr size_t wordBits = std::numeric_limits<TWord>::digits;
 };
@@ -184,6 +196,8 @@ private:
 
 	/* Compile-time consistency checks */
 	static_assert(!Util::hasOverlappingFields(), "Bit fields are overlapping");
+	static_assert(Util::isByteOffsetConsistent(),
+				  "Byte offset value is not consistent with word value");
 
 	TWord raw[TBitFieldDef::wordCount];
 };
