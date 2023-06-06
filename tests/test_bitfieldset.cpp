@@ -112,9 +112,24 @@ consteval uint32_t testConstexpr()
 	return tb.get<TBF::F1>() + tb.get<TBF::F2>();
 }
 
+consteval uint32_t testConstWordConstexpr()
+{
+	TBF tb;
+
+	tb.resetAll();
+
+	tb.set<TBF::F1>(2);
+	tb.set<TBF::F2>(3);
+
+	auto w0 = tb.word<TBF::F1>();
+
+	return w0.get<TBF::F1>() + w0.get<TBF::F2>();
+}
+
 TEST(BitFieldSetTest, BasicConstexprTest)
 {
 	EXPECT_EQ(testConstexpr(), 5);
+	EXPECT_EQ(testConstWordConstexpr(), 5);
 }
 
 TEST(BitFieldSetTest, BasicTest)
@@ -128,4 +143,44 @@ TEST(BitFieldSetTest, BasicTest)
 
 	EXPECT_EQ(tb.get<TBF::F1>(), 3);
 	EXPECT_EQ(tb.get<TBF::F2>(), 2);
+}
+
+TEST(BitFieldSetTest, CascadedCV)
+{
+	TBF tb;
+
+	tb.resetAll();
+
+	tb.set<TBF::F1>(3);
+	tb.set<TBF::F2>(2);
+
+	auto w0 = tb.word<TBF::F1>();
+
+	EXPECT_EQ(w0.get<TBF::F1>(), 3);
+	EXPECT_EQ(w0.get<TBF::F2>(), 2);
+
+	TBF::WordType f1, f2;
+
+	const TBF tbc = tb;
+
+	tb.set<TBF::F2>(55);
+
+	tbc.get<TBF::F1>(f1).
+		get<TBF::F2>(f2);
+
+	EXPECT_EQ(f1, 3);
+	EXPECT_EQ(f2, 2);
+
+	const volatile TBF tbcv = tbc;
+
+	tbcv.get<TBF::F1>(f1).
+		 get<TBF::F2>(f2);
+
+	EXPECT_EQ(f1, 3);
+	EXPECT_EQ(f2, 2);
+
+	auto w0cv = tbcv.word<TBF::F1>();
+
+	EXPECT_EQ(w0cv.get<TBF::F1>(), 3);
+	EXPECT_EQ(w0cv.get<TBF::F2>(), 2);
 }

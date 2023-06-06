@@ -178,10 +178,74 @@ private:
 	static constexpr size_t wordBits = std::numeric_limits<TWord>::digits;
 };
 
+template <typename TBitFieldDef, size_t TWordIdx>
+class BitFieldWordConstImpl {
+	using TWord = typename TBitFieldDef::WordType;
+
+public:
+	constexpr explicit BitFieldWordConstImpl(TWord word) noexcept
+		: cachedWord(word)
+	{
+	}
+
+	template <typename TBitFieldDef::FIELDS field>
+	constexpr const BitFieldWordConstImpl &get(TWord &value) const noexcept
+	{
+		static_assert(TBitFieldDef::layout[field].word == TWordIdx,
+					  "cascading field accessors from different words");
+
+		const auto &entry = TBitFieldDef::layout[field];
+		const TWord mask = bitMask<TWord>(entry.lsb, entry.msb);
+
+		static_assert(entry.access != AccessType::WRITE_ONLY, "reading from WO field");
+
+		value = (cachedWord & mask) >> entry.lsb;
+
+		return *this;
+	}
+
+	template <typename TBitFieldDef::FIELDS field>
+	constexpr TWord get() const noexcept
+	{
+		TWord value;
+
+		get<field>(value);
+
+		return value;
+	}
+
+private:
+	const TWord cachedWord;
+};
+
 template <typename TBitFieldDef>
 class BitFieldSet : public TBitFieldDef {
 public:
 	using TWord = typename TBitFieldDef::WordType;
+
+	template <typename TBitFieldDef::FIELDS field>
+	constexpr auto word() const
+	{
+		return BitFieldWordConst<field>(raw[wordIdx(field)]);
+	}
+
+	template <typename TBitFieldDef::FIELDS field>
+	constexpr auto word() const volatile
+	{
+		return BitFieldWordConst<field>(raw[wordIdx(field)]);
+	}
+
+	template <typename TBitFieldDef::FIELDS field>
+	consteval auto constWord() const
+	{
+		return word<field>();
+	}
+
+	template <typename TBitFieldDef::FIELDS field>
+	consteval auto constWord() const volatile
+	{
+		return word<field>();
+	}
 
 	template <typename TBitFieldDef::FIELDS field>
 	constexpr void set(TWord value)
@@ -237,6 +301,26 @@ public:
 		return (word & mask) >> entry.lsb;
 	}
 
+	template <typename TBitFieldDef::FIELDS field>
+	constexpr auto get(TWord &value) const
+	{
+		auto w = word<field>();
+
+		w.template get<field>(value);
+
+		return w;
+	}
+
+	template <typename TBitFieldDef::FIELDS field>
+	constexpr auto get(TWord &value) const volatile
+	{
+		auto w = word<field>();
+
+		w.template get<field>(value);
+
+		return w;
+	}
+
 	constexpr void resetAll()
 	{
 		std::fill_n(raw, TBitFieldDef::wordCount, 0);
@@ -254,6 +338,9 @@ private:
 	{
 		return TBitFieldDef::layout[static_cast<size_t>(field)].word;
 	}
+
+	template <typename TBitFieldDef::FIELDS field>
+	using BitFieldWordConst = BitFieldWordConstImpl<TBitFieldDef, wordIdx(field)>;
 
 	/* Compile-time consistency checks */
 	static_assert(Util::isWordIdxWithinBounds(), "Word index is not within defined range");
