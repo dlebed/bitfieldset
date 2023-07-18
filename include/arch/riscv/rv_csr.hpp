@@ -447,6 +447,66 @@ inline void csr_write(xlen_t value)
 				:						/* clobbers: none */);
 }
 
+#define CSR_INDEXED_ASM(STMT) \
+	"lla %[jmp_dst], 1						\n"	\
+	"add %[jmp_dst], %[jmp_dst], %[index]	\n"	\
+	"jr %[jmp_dst]							\n"	\
+	".option push							\n"	\
+	".option norvc							\n"	\
+	"1:;									\n"	\
+	".set i, 0								\n"	\
+	".rept %[csr_count]						\n"	\
+	".set reg_idx, (%[start] + i)			\n"	\
+	STMT 								   "\n"	\
+	"j 2f									\n"	\
+	".set i, i + 1							\n"	\
+	".endr									\n"	\
+	".option pop							\n"	\
+	"2:;									\n"
+
+template <csr start, csr end>
+inline xlen_t csr_indexed_read(size_t idx)
+{
+	constexpr size_t start_idx = static_cast<size_t>(start);
+	constexpr size_t end_idx = static_cast<size_t>(end);
+	constexpr size_t csr_count = end_idx - start_idx + 1;
+	constexpr size_t jump_entry_size = 4 * 2; /* 2 x 4-byte instructions */
+	uintptr_t tmp;
+	xlen_t res = 0;
+
+	static_assert(end_idx >= start_idx, "Invalid range");
+
+	asm volatile(CSR_INDEXED_ASM("csrr %[res], (reg_idx)")
+				: [res] "=r" (res),
+				  [jmp_dst] "=&r" (tmp)					/* output */
+				: [csr_count] "i" (csr_count),
+				  [start] "i" (start_idx),
+				  [index] "r" (idx * jump_entry_size)	/* input */
+				:										/* clobbers: none */);
+
+	return res;
+}
+
+template <csr start, csr end>
+inline void csr_indexed_write(size_t idx, xlen_t value)
+{
+	constexpr size_t start_idx = static_cast<size_t>(start);
+	constexpr size_t end_idx = static_cast<size_t>(end);
+	constexpr size_t csr_count = end_idx - start_idx + 1;
+	constexpr size_t jump_entry_size = 4 * 2; /* 2 x 4-byte instructions */
+	uintptr_t tmp;
+
+	static_assert(end_idx >= start_idx, "Invalid range");
+
+	asm volatile(CSR_INDEXED_ASM("csrw (reg_idx), %[val]")
+				: [val] "r" (value),
+				  [jmp_dst] "=&r" (tmp)					/* output */
+				: [csr_count] "i" (csr_count),
+				  [start] "i" (start_idx),
+				  [index] "r" (idx * jump_entry_size)	/* input */
+				:										/* clobbers: none */);
+}
+
 }
 
 #endif /* BITFIELDSET_ARCH_CSR_H */
