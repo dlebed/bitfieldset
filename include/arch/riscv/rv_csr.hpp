@@ -464,7 +464,7 @@ inline void csr_write(uxlen_t value)
 	"2:;									\n"
 
 template <csr start, csr end>
-inline uxlen_t csr_indexed_read(size_t idx)
+uxlen_t csr_indexed_read(size_t idx)
 {
 	constexpr size_t start_idx = static_cast<size_t>(start);
 	constexpr size_t end_idx = static_cast<size_t>(end);
@@ -487,7 +487,7 @@ inline uxlen_t csr_indexed_read(size_t idx)
 }
 
 template <csr start, csr end>
-inline void csr_indexed_write(size_t idx, uxlen_t value)
+void csr_indexed_write(size_t idx, uxlen_t value)
 {
 	constexpr size_t start_idx = static_cast<size_t>(start);
 	constexpr size_t end_idx = static_cast<size_t>(end);
