@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "rv_types.hpp"
 
 namespace rv {
 
@@ -419,13 +420,11 @@ enum class csr : uint16_t {
 	mconfigptr                      = 0xf15,
 };
 
-using xlen_t = uint32_t; /* TODO: add parametrization here */
-
 template <csr reg>
-inline xlen_t csr_read()
+inline uxlen_t csr_read()
 {
 	constexpr size_t idx = static_cast<size_t>(reg);
-	xlen_t res;
+	uxlen_t res;
 
 	asm volatile("csrr %[res], %[idx]"
 				: [res] "=r" (res)		/* output */
@@ -436,7 +435,7 @@ inline xlen_t csr_read()
 }
 
 template <csr reg>
-inline void csr_write(xlen_t value)
+inline void csr_write(uxlen_t value)
 {
 	constexpr size_t idx = static_cast<size_t>(reg);
 
@@ -465,14 +464,14 @@ inline void csr_write(xlen_t value)
 	"2:;									\n"
 
 template <csr start, csr end>
-inline xlen_t csr_indexed_read(size_t idx)
+inline uxlen_t csr_indexed_read(size_t idx)
 {
 	constexpr size_t start_idx = static_cast<size_t>(start);
 	constexpr size_t end_idx = static_cast<size_t>(end);
 	constexpr size_t csr_count = end_idx - start_idx + 1;
 	constexpr size_t jump_entry_size = 4 * 2; /* 2 x 4-byte instructions */
 	uintptr_t tmp;
-	xlen_t res = 0;
+	uxlen_t res = 0;
 
 	static_assert(end_idx >= start_idx, "Invalid range");
 
@@ -488,7 +487,7 @@ inline xlen_t csr_indexed_read(size_t idx)
 }
 
 template <csr start, csr end>
-inline void csr_indexed_write(size_t idx, xlen_t value)
+inline void csr_indexed_write(size_t idx, uxlen_t value)
 {
 	constexpr size_t start_idx = static_cast<size_t>(start);
 	constexpr size_t end_idx = static_cast<size_t>(end);
