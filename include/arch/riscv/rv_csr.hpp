@@ -498,7 +498,7 @@ void csr_indexed_write(size_t idx, uxlen_t value)
 	static_assert(end_idx >= start_idx, "Invalid range");
 
 	asm volatile(CSR_INDEXED_ASM("csrw (reg_idx), %[val]")
-				: [val] "r" (value),
+				: [val] "=r" (value),
 				  [jmp_dst] "=&r" (tmp)					/* output */
 				: [csr_count] "i" (csr_count),
 				  [start] "i" (start_idx),
