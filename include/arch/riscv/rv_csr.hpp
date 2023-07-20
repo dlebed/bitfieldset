@@ -6,8 +6,8 @@
 #ifndef BITFIELDSET_ARCH_CSR_H
 #define BITFIELDSET_ARCH_CSR_H
 
-#include <stdint.h>
-#include <stddef.h>
+#include <cstdint>
+#include <cstddef>
 #include "rv_types.hpp"
 
 namespace rv {
