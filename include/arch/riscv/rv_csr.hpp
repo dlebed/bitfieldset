@@ -8,6 +8,8 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <utility>
+#include <array>
 #include "rv_types.hpp"
 
 namespace rv {
@@ -446,6 +448,10 @@ inline void csr_write(uxlen_t value)
 				:						/* clobbers: none */);
 }
 
+namespace helpers {
+
+#ifdef CONFIG_RV_CSR_INDEXED_ASM
+
 #define CSR_INDEXED_ASM(STMT) \
 	"lla %[jmp_dst], 1						\n"	\
 	"add %[jmp_dst], %[jmp_dst], %[index]	\n"	\
@@ -464,7 +470,7 @@ inline void csr_write(uxlen_t value)
 	"2:;									\n"
 
 template <csr start, csr end>
-uxlen_t csr_indexed_read(size_t idx)
+uxlen_t csr_read_indexed(size_t idx)
 {
 	constexpr size_t start_idx = static_cast<size_t>(start);
 	constexpr size_t end_idx = static_cast<size_t>(end);
@@ -487,7 +493,7 @@ uxlen_t csr_indexed_read(size_t idx)
 }
 
 template <csr start, csr end>
-void csr_indexed_write(size_t idx, uxlen_t value)
+void csr_write_indexed(size_t idx, uxlen_t value)
 {
 	constexpr size_t start_idx = static_cast<size_t>(start);
 	constexpr size_t end_idx = static_cast<size_t>(end);
@@ -506,6 +512,65 @@ void csr_indexed_write(size_t idx, uxlen_t value)
 				:										/* clobbers: none */);
 }
 
+#else
+
+template<csr start, size_t... indices>
+constexpr auto csr_write_func_table_gen(std::index_sequence<indices...>) {
+	constexpr size_t start_idx = static_cast<size_t>(start);
+
+	return std::array<void (*)(uxlen_t), sizeof...(indices)>
+			{&csr_write<static_cast<csr>(start_idx + indices)>...};
 }
+
+template<csr start, size_t... indices>
+constexpr auto csr_read_func_table_gen(std::index_sequence<indices...>) {
+	constexpr size_t start_idx = static_cast<size_t>(start);
+
+	return std::array<uxlen_t (*)(), sizeof...(indices)>
+			{&csr_read<static_cast<csr>(start_idx + indices)>...};
+}
+
+template<csr start, csr end>
+void csr_write_indexed(size_t idx, uxlen_t value) {
+	static_assert(end >= start, "Invalid CSR range, end < start");
+
+	constexpr size_t csr_count = static_cast<size_t>(end) - static_cast<size_t>(start) + 1;
+	using csr_idx_seq = std::make_index_sequence<csr_count>;
+	static constexpr auto func_tbl = csr_write_func_table_gen<start>(csr_idx_seq{});
+
+	if (idx < csr_count)
+		func_tbl[idx](value);
+}
+
+template<csr start, csr end>
+uxlen_t csr_read_indexed(size_t idx) {
+	static_assert(end >= start, "Invalid CSR range, end < start");
+
+	constexpr size_t csr_count = static_cast<size_t>(end) - static_cast<size_t>(start) + 1;
+	using csr_idx_seq = std::make_index_sequence<csr_count>;
+	static constexpr auto func_tbl = csr_read_func_table_gen<start>(csr_idx_seq{});
+	uxlen_t res = 0;
+
+	if (idx < csr_count)
+		res = func_tbl[idx]();
+
+	return res;
+}
+
+#endif
+
+} /* namespace helpers */
+
+void csr_write_pmpaddr(size_t idx, uxlen_t value)
+{
+	return helpers::csr_write_indexed<csr::pmpaddr0, csr::pmpaddr15>(idx, value);
+}
+
+uxlen_t csr_read_pmpaddr(size_t idx)
+{
+	return helpers::csr_read_indexed<csr::pmpaddr0, csr::pmpaddr15>(idx);
+}
+
+} /* namespace rv */
 
 #endif /* BITFIELDSET_ARCH_CSR_H */
