@@ -563,7 +563,7 @@ uxlen_t csr_read_indexed(size_t idx) {
 
 void csr_write_pmpaddr(size_t idx, uxlen_t value)
 {
-	return helpers::csr_write_indexed<csr::pmpaddr0, csr::pmpaddr15>(idx, value);
+	helpers::csr_write_indexed<csr::pmpaddr0, csr::pmpaddr15>(idx, value);
 }
 
 uxlen_t csr_read_pmpaddr(size_t idx)
